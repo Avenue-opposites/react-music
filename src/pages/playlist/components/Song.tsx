@@ -1,13 +1,14 @@
 import { Icon } from '@iconify-icon/react/dist/iconify.js'
 import * as Avatar from '@radix-ui/react-avatar'
 import clsx from 'clsx'
-import { Fragment, memo } from 'react'
+import { Fragment, memo, useMemo } from 'react'
 import { toast } from 'react-hot-toast'
 import { Link } from 'react-router-dom'
 import { checkMusic } from '~/api/song'
 import { useStore } from '~/store'
 import { getMusic } from '~/api/song'
 import { getLyric } from '~/api/lyric'
+import Love from './Love'
 
 interface SongProps {
   id: number;
@@ -16,6 +17,7 @@ interface SongProps {
   singers: any[];
   alias: string[];
   isCopyright: boolean;
+  isLoved: boolean;
 }
 
 const Song: React.FC<SongProps> = memo(({
@@ -24,7 +26,8 @@ const Song: React.FC<SongProps> = memo(({
   album,
   singers,
   alias,
-  isCopyright
+  isCopyright,
+  isLoved
 }) => {
   const setCurrentSong = useStore(state => state.setCurrentSong)
   const aliasText = alias.join('')
@@ -119,6 +122,12 @@ const Song: React.FC<SongProps> = memo(({
         <Link to={`/album/${id}`} title={album?.name}>
           {album?.name}
         </Link>
+      </span>
+      <span className="justify-self-end">
+        <Love love={isLoved} />
+      </span>
+      <span className="text-2xl text-gray-500">
+        <Icon icon="material-symbols:download" />
       </span>
     </li>
   )

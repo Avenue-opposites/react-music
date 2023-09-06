@@ -14,14 +14,16 @@ import SongDetails from './SongDetails'
 enum PlayMode {
   Order,
   Shuffle,
-  Loop
+  Loop,
+  Single_Loop
 }
 
-const PlayIconMap = {
-  [PlayMode.Order]: 'ri:order-play-line',
-  [PlayMode.Shuffle]: 'ion:shuffle',
-  [PlayMode.Loop]: 'material-symbols:repeat-rounded'
-}
+const PlayIconMap = [
+  'ri:order-play-line',
+  'ion:shuffle',
+  'material-symbols:repeat-rounded',
+  'material-symbols:repeat-one-rounded'
+]
 
 const MusicPlayer = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -51,9 +53,7 @@ const MusicPlayer = () => {
   const play = useCallback(() => controls.play(), [controls])
   const pause = useCallback(() => controls.pause(), [controls])
   const changePlayMode = () => {
-    setPlayMode(state => {
-      return (state + 1) % 3
-    })
+    setPlayMode(state => (state + 1) % PlayIconMap.length)
   }
   const onVolumeChange = ([volume]: number[]) => {
     controls.volume(volume)
@@ -73,6 +73,10 @@ const MusicPlayer = () => {
         break
       }
       case PlayMode.Loop: {
+        console.log('列表循环')
+        break
+      }
+      case PlayMode.Single_Loop: {
         console.log('单曲循环')
         break
       }

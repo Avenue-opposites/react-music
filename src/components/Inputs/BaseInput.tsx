@@ -26,6 +26,7 @@ const BaseInput: React.FC<InputBaseProps> = (props) => {
     className,
     errorClassName = '',
     disabledClassName = '',
+    placeholder,
     errors
   } = props
 
@@ -42,6 +43,7 @@ const BaseInput: React.FC<InputBaseProps> = (props) => {
       type={type}
       disabled={disabled}
       autoComplete={autoComplete}
+      placeholder={placeholder}
       {...register(name, { required })}
     />
   )

@@ -1,7 +1,8 @@
 import { Icon } from '@iconify-icon/react/dist/iconify.js'
 import * as Avatar from '@radix-ui/react-avatar'
 import * as ScrollArea from '@radix-ui/react-scroll-area'
-import { throttle } from 'lodash'
+import { throttle, debounce } from 'lodash'
+import { useForm, FieldValues } from 'react-hook-form'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
@@ -10,12 +11,16 @@ import { useStore } from '~/store'
 import { formatFrequency } from '~/utils'
 import Song from './components/Song'
 import { getPlaylistAllSong } from '~/api/playlist'
+import BaseInput from '~/components/Inputs/BaseInput'
+
+type Form = {
+  [keyword: string]: string;
+} & FieldValues
 
 const PlaylistPage = () => {
   const [lovedSongs, lovedPlaylist] = useStore(state => [state.lovedSongs, state.lovedPlaylist()])
+  const [currentPlaylistSong, setCurrentPlaylistSong] = useStore(state => [state.currentPlaylistSong, state.setCurrentPlaylistSong])
   const scrollViewRef = useRef<HTMLDivElement | null>(null)
-  const { id } = useParams()
-  
   const limit = 50
   const [stateConfig, setStateConfig] = useState<{
     offset: number
@@ -24,6 +29,49 @@ const PlaylistPage = () => {
     offset: 0,
     songs: []
   })
+  const { id } = useParams()
+
+  const { register, handleSubmit, formState: { errors } } = useForm<Form>({
+    defaultValues: {
+      keyword: ''
+    }
+  })
+
+  const onSearch = debounce(handleSubmit((data) => {
+
+    const { keyword } = data
+    if(!keyword) {
+      setStateConfig(state => ({
+        ...state,
+        songs: currentPlaylistSong
+      }))
+      return
+    }
+    
+    const songTitleFiltered = currentPlaylistSong
+    .filter(song => song.name.includes(keyword))
+
+    const singerNameFiltered = currentPlaylistSong
+    .filter(
+      song => song.ar.some(
+          (singer: { name:string }) => singer.name.includes(keyword)
+        )
+      )
+
+    const albumNameFiltered = currentPlaylistSong
+    .filter(
+      song => song.al.name.includes(keyword)
+    )
+
+    const songsFiltered = [...new Set([...songTitleFiltered, ...singerNameFiltered, ...albumNameFiltered])]
+    
+    setStateConfig(state => ({
+      ...state,
+      songs: songsFiltered,
+    }))
+    
+  }), 300)
+
   const loadSongs = useMemo(() => stateConfig.songs.slice(0, stateConfig.offset + limit), [stateConfig])
   const playlist = useStore(state => state.getPlaylistById(+id!))
   const avatar = useMemo(() => playlist?.creator.avatarUrl, [playlist])
@@ -35,7 +83,10 @@ const PlaylistPage = () => {
 
   useEffect(() => {
     if (!id) return
-    if(id === lovedPlaylist?.id) {
+    // 当前歌单为我喜欢的音乐
+    if (id === lovedPlaylist?.id) {
+      setCurrentPlaylistSong(lovedSongs)
+      
       setStateConfig(state => ({
         ...state,
         songs: lovedSongs
@@ -45,7 +96,8 @@ const PlaylistPage = () => {
 
     getPlaylistAllSong(+id, trackCount)
       .then((songs) => {
-        
+        setCurrentPlaylistSong(songs)
+
         setStateConfig(state => ({
           ...state,
           songs
@@ -54,7 +106,7 @@ const PlaylistPage = () => {
       .catch((reason) => {
         console.error(reason)
       })
-  }, [id, trackCount, lovedSongs, lovedPlaylist?.id])
+  }, [id, trackCount, lovedSongs, lovedPlaylist?.id, setCurrentPlaylistSong])
 
   useEffect(() => {
     if (!scrollViewRef.current) return
@@ -79,9 +131,6 @@ const PlaylistPage = () => {
       el.removeEventListener('scroll', handler)
     }
   }, [scrollViewRef])
-
-  // console.log(loadSongs)
-
 
   return (
     <ScrollArea.Root className="h-full">
@@ -151,8 +200,26 @@ const PlaylistPage = () => {
               </div>
             </div>
           </div>
+          <form className="px-4 pt-2 flex" onSubmit={onSearch}>
+            <div className="w-full flex justify-end items-center">
+              <BaseInput 
+                className="px-1 h-8 text-sm outline-none border-b" 
+                name="keyword" 
+                register={register} 
+                errors={errors} 
+                placeholder="搜索歌单音乐"
+                onInput={onSearch}
+                onKeyDown={(e) => e.stopPropagation()}
+              />
+            </div>
+          </form>
           <div className="p-4">
             <ul className="space-y-2">
+              {
+                loadSongs.length === 0 && (
+                  <li className="text-2xl text-gray-500 text-center">暂无歌曲</li>
+                )
+              }
               {
                 loadSongs.map(song => <Song
                   key={song.id}
@@ -162,6 +229,7 @@ const PlaylistPage = () => {
                   alias={song.alia}
                   singers={song.ar}
                   isCopyright
+                  isLoved={lovedSongs.some(s => s.id === song.id)}
                 />
                 )
               }
