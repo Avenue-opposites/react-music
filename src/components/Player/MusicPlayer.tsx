@@ -33,19 +33,86 @@ const MusicPlayer = () => {
   const [currentSong, setCurrentSong] = useStore(state => [state.currentSong, state.setCurrentSong])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoop, setIsLoop] = useState(false)
-  
+
   const currentPlaylistSong = useStore(state => state.currentPlaylistSong)
   const [playMode, setPlayMode] = useState<PlayMode>(0)
+  const getCurrentIndex = () => {
+    return currentPlaylistSong.findIndex(song => song.id === currentSong.id)
+  }
+
+  const getSongUrl = async (id: number, errorCallback: (message: string) => void) => {
+    const { data: { success, message } } = await checkMusic(id)
+
+    if (!success) {
+      errorCallback(message)
+      return
+    }
+
+    const { data: [song] } = await getMusic([id])
+    const { data: { lrc, tlyric } } = await getLyric(id)
+
+    return {
+      url: song.url,
+      lyrics: lrc.lyric,
+      lyricsTranslation: tlyric.lyric
+    }
+  }
+
+  const setPlaySong = (playSong: any) => {
+    getSongUrl(playSong.id, (message) => {
+      toast.error(message)
+    })
+      .then(song => {
+        if (song) {
+          const { url, lyrics, lyricsTranslation } = song
+
+          setCurrentSong({
+            id: playSong.id,
+            name: playSong.name,
+            image: playSong.al.picUrl,
+            singers: playSong.ar,
+            album: playSong.al,
+            url,
+            lyrics,
+            lyricsTranslation
+          })
+        }
+      })
+  }
+
+  const playPrev = async () => {
+    const currentIndex = getCurrentIndex()
+    if (currentIndex === -1) return
+
+    const prevIndex = getNextIndex('prev', currentIndex, currentPlaylistSong.length, playMode)
+
+    const prevSong = currentPlaylistSong[prevIndex]
+
+    setPlaySong(prevSong)
+  }
+
+  const playNext = async () => {
+    const currentIndex = getCurrentIndex()
+    if (currentIndex === -1) return
+
+    const nextIndex = getNextIndex('next', currentIndex, currentPlaylistSong.length, playMode)
+
+    const nextSong = currentPlaylistSong[nextIndex]
+
+    setPlaySong(nextSong)
+  }
+
   const [audio, state, controls] = useAudio({
     src: currentSong?.url,
     autoPlay: true,
-    loop: isLoop
+    loop: isLoop,
+    onEnded: playNext
   })
 
   const formattedTime = formatTime(state.time)
-  
-  const lyric = useMemo(() => 
-    parseLyric(currentSong.lyrics, ''), 
+
+  const lyric = useMemo(() =>
+    parseLyric(currentSong.lyrics, ''),
     [currentSong.lyrics]
   )
 
@@ -69,76 +136,10 @@ const MusicPlayer = () => {
     controls.seek(time)
   }
 
-  const getCurrentIndex = () => {
-    return currentPlaylistSong.findIndex(song => song.id === currentSong.id)
-  }
-  
-  const getSongUrl = async (id: number, errorCallback: (message: string) => void) => {
-    const { data: { success, message } } = await checkMusic(id)
-
-    if(!success) {
-      errorCallback(message)
-      return
-    }
-
-    const { data: [song] } = await getMusic([id])
-    const { data: { lrc, tlyric } } = await getLyric(id)
-
-    return {
-      url: song.url,
-      lyrics: lrc.lyric,
-      lyricsTranslation: tlyric.lyric
-    }
-  }
-
-  const setPlaySong = (playSong: any) => {
-    getSongUrl(playSong.id, (message) => {
-      toast.error(message)
-    })
-    .then(song => {
-      if(song) {
-        const { url, lyrics, lyricsTranslation } = song
-
-        setCurrentSong({
-          id: playSong.id,
-          name: playSong.name,
-          image: playSong.al.picUrl,
-          singers: playSong.ar,
-          album: playSong.al,
-          url,
-          lyrics,
-          lyricsTranslation
-        })
-      }
-    })
-  }
-
-  const playPrev = async () => {
-    const currentIndex = getCurrentIndex()
-    if(currentIndex === -1) return
-
-    const prevIndex = getNextIndex('prev' ,currentIndex, currentPlaylistSong.length, playMode)
-    
-    const prevSong = currentPlaylistSong[prevIndex]
-    
-    setPlaySong(prevSong)
-  }
-
-  const playNext = async () => {
-    const currentIndex = getCurrentIndex()
-    if(currentIndex === -1) return
-
-    const nextIndex = getNextIndex('next' ,currentIndex, currentPlaylistSong.length, playMode)
-    
-    const nextSong = currentPlaylistSong[nextIndex]
-
-    setPlaySong(nextSong)
-  }
-
   useEffect(() => {
-    if(playMode === PlayMode.Single_Loop) {
+    if (playMode === PlayMode.Single_Loop) {
       setIsLoop(true)
-    }else {
+    } else {
       setIsLoop(false)
     }
   }, [playMode])
@@ -182,12 +183,12 @@ const MusicPlayer = () => {
                 <Icon onClick={close} className="text-2xl text-gray-500 -rotate-90 cursor-pointer" icon="material-symbols:arrow-back-ios-new-rounded" />
               </li>
             </ul>
-            <SongDetails 
+            <SongDetails
               onTimeChange={onTimeChange}
-              time={state.time} 
-              lyric={lyric} 
-              isPlaying={state.playing} 
-              {...currentSong} 
+              time={state.time}
+              lyric={lyric}
+              isPlaying={state.playing}
+              {...currentSong}
             />
           </div>
         </Transition.Child>
@@ -241,8 +242,8 @@ const MusicPlayer = () => {
           "
           >
             <Avatar.Image className="w-full h-full object-cover" src={currentSong.image} alt={currentSong.name} />
-            <div 
-              onClick={toggle} 
+            <div
+              onClick={toggle}
               className="
                 absolute opacity-0 group-hover:opacity-100 
                 transition-opacity
@@ -349,8 +350,8 @@ export default MusicPlayer
 
 function getNextIndex(
   type: 'prev' | 'next',
-  currentIndex: number, 
-  playlistLength: number, 
+  currentIndex: number,
+  playlistLength: number,
   playMode: PlayMode,
 ): number {
   let index = currentIndex
@@ -365,7 +366,7 @@ function getNextIndex(
       index = random(0, playlistLength - 1)
       break
     }
-    default:{
+    default: {
       break
     }
   }
