@@ -10,6 +10,10 @@ import clsx from 'clsx'
 import { useStore } from '~/store'
 import { formatTime, parseLyric } from '~/utils'
 import SongDetails from './SongDetails'
+import { checkMusic, getMusic } from '~/api/song'
+import { random } from 'lodash'
+import { getLyric } from '~/api/lyric'
+import toast from 'react-hot-toast'
 
 enum PlayMode {
   Order,
@@ -26,13 +30,16 @@ const PlayIconMap = [
 ]
 
 const MusicPlayer = () => {
+  const [currentSong, setCurrentSong] = useStore(state => [state.currentSong, state.setCurrentSong])
   const [isOpen, setIsOpen] = useState(false)
-  const currentSong = useStore(state => state.currentSong)
+  const [isLoop, setIsLoop] = useState(false)
+  
+  const currentPlaylistSong = useStore(state => state.currentPlaylistSong)
   const [playMode, setPlayMode] = useState<PlayMode>(0)
   const [audio, state, controls] = useAudio({
-    src: currentSong.url,
+    src: currentSong?.url,
     autoPlay: true,
-    loop: false,
+    loop: isLoop
   })
 
   const formattedTime = formatTime(state.time)
@@ -62,27 +69,77 @@ const MusicPlayer = () => {
     controls.seek(time)
   }
 
+  const getCurrentIndex = () => {
+    return currentPlaylistSong.findIndex(song => song.id === currentSong.id)
+  }
+  
+  const getSongUrl = async (id: number, errorCallback: (message: string) => void) => {
+    const { data: { success, message } } = await checkMusic(id)
+
+    if(!success) {
+      errorCallback(message)
+      return
+    }
+
+    const { data: [song] } = await getMusic([id])
+    const { data: { lrc, tlyric } } = await getLyric(id)
+
+    return {
+      url: song.url,
+      lyrics: lrc.lyric,
+      lyricsTranslation: tlyric.lyric
+    }
+  }
+
+  const setPlaySong = (playSong: any) => {
+    getSongUrl(playSong.id, (message) => {
+      toast.error(message)
+    })
+    .then(song => {
+      if(song) {
+        const { url, lyrics, lyricsTranslation } = song
+
+        setCurrentSong({
+          id: playSong.id,
+          name: playSong.name,
+          image: playSong.al.picUrl,
+          singers: playSong.ar,
+          album: playSong.al,
+          url,
+          lyrics,
+          lyricsTranslation
+        })
+      }
+    })
+  }
+
+  const playPrev = async () => {
+    const currentIndex = getCurrentIndex()
+    if(currentIndex === -1) return
+
+    const prevIndex = getNextIndex('prev' ,currentIndex, currentPlaylistSong.length, playMode)
+    
+    const prevSong = currentPlaylistSong[prevIndex]
+    
+    setPlaySong(prevSong)
+  }
+
+  const playNext = async () => {
+    const currentIndex = getCurrentIndex()
+    if(currentIndex === -1) return
+
+    const nextIndex = getNextIndex('next' ,currentIndex, currentPlaylistSong.length, playMode)
+    
+    const nextSong = currentPlaylistSong[nextIndex]
+
+    setPlaySong(nextSong)
+  }
+
   useEffect(() => {
-    switch (playMode) {
-      case PlayMode.Order: {
-        console.log('顺序播放')
-        break
-      }
-      case PlayMode.Shuffle: {
-        console.log('随机播放')
-        break
-      }
-      case PlayMode.Loop: {
-        console.log('列表循环')
-        break
-      }
-      case PlayMode.Single_Loop: {
-        console.log('单曲循环')
-        break
-      }
-      default: {
-        break
-      }
+    if(playMode === PlayMode.Single_Loop) {
+      setIsLoop(true)
+    }else {
+      setIsLoop(false)
     }
   }, [playMode])
 
@@ -216,18 +273,19 @@ const MusicPlayer = () => {
         <div className="flex items-end gap-x-10">
           <span>{formattedTime}</span>
           <div className="text-4xl flex items-center gap-x-4">
-            <Icon icon="material-symbols:skip-previous-rounded" />
+            <Icon onClick={playPrev} icon="material-symbols:skip-previous-rounded" />
             {
               state.paused
                 ? (<Icon className="text-5xl" onClick={play} icon="material-symbols:play-arrow-rounded" />)
                 : (<Icon className="text-5xl" onClick={pause} icon="material-symbols:pause-rounded" />)
             }
-            <Icon icon="material-symbols:skip-next-rounded" />
+            <Icon onClick={playNext} icon="material-symbols:skip-next-rounded" />
           </div>
           <span>{formatTime(state.duration)}</span>
         </div>
         {/* 功能区 */}
         <div className="flex w-72 text-2xl items-center gap-x-4">
+          <Icon icon="solar:playlist-bold" />
           <Icon onClick={changePlayMode} icon={PlayIconMap[playMode]} />
           <Tooltip.Root delayDuration={300}>
             <Tooltip.Trigger asChild>
@@ -288,3 +346,29 @@ const MusicPlayer = () => {
 }
 
 export default MusicPlayer
+
+function getNextIndex(
+  type: 'prev' | 'next',
+  currentIndex: number, 
+  playlistLength: number, 
+  playMode: PlayMode,
+): number {
+  let index = currentIndex
+
+  switch (playMode) {
+    case PlayMode.Single_Loop:
+    case PlayMode.Order: {
+      index = (type === 'prev' ? index - 1 : index + 1) % playlistLength
+      break
+    }
+    case PlayMode.Shuffle: {
+      index = random(0, playlistLength - 1)
+      break
+    }
+    default:{
+      break
+    }
+  }
+
+  return index
+}

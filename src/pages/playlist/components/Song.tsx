@@ -40,9 +40,7 @@ const Song: React.FC<SongProps> = memo(({
 
     if(success) {
       const { data: [song] } = await getMusic([id])
-      const { data } = await getLyric(id)
-      console.log(data)
-      const { lrc, tlyric } = data
+      const { data: { lrc, tlyric } } = await getLyric(id)
       
       setCurrentSong({
         id,

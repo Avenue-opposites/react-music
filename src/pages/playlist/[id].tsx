@@ -133,7 +133,7 @@ const PlaylistPage = () => {
   }, [scrollViewRef])
 
   return (
-    <ScrollArea.Root className="h-full">
+    <ScrollArea.Root type="scroll" className="h-full">
       <ScrollArea.Viewport ref={scrollViewRef} className="h-full w-full">
         <div>
           <div style={{ backgroundImage: `url(${cover})` }} className="w-full bg-no-repeat bg-top bg-cover">
