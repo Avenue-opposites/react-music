@@ -1,7 +1,8 @@
 import { Icon } from '@iconify-icon/react/dist/iconify.js'
 import * as Avatar from '@radix-ui/react-avatar'
 import * as ScrollArea from '@radix-ui/react-scroll-area'
-import { throttle, debounce } from 'lodash'
+import useScrollBottom from '~/hooks/useScrollBottom'
+import { debounce } from 'lodash'
 import { useForm, FieldValues } from 'react-hook-form'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -12,12 +13,14 @@ import { formatFrequency } from '~/utils'
 import Song from './components/Song'
 import { getPlaylistAllSong } from '~/api/playlist'
 import BaseInput from '~/components/Inputs/BaseInput'
+import { useToggle } from 'react-use'
 
 type Form = {
   [keyword: string]: string;
 } & FieldValues
 
 const PlaylistPage = () => {
+  const[isLoading, toggleIsLoading] = useToggle(true)
   const [lovedSongs, lovedPlaylist] = useStore(state => [state.lovedSongs, state.lovedPlaylist()])
   const [currentPlaylistSong, setCurrentPlaylistSong] = useStore(state => [state.currentPlaylistSong, state.setCurrentPlaylistSong])
   const scrollViewRef = useRef<HTMLDivElement | null>(null)
@@ -91,6 +94,7 @@ const PlaylistPage = () => {
         ...state,
         songs: lovedSongs
       }))
+      toggleIsLoading(false)
       return
     }
 
@@ -106,35 +110,32 @@ const PlaylistPage = () => {
       .catch((reason) => {
         console.error(reason)
       })
-  }, [id, trackCount, lovedSongs, lovedPlaylist?.id, setCurrentPlaylistSong])
+      .finally(() => toggleIsLoading(false))
+  }, [id, trackCount, lovedSongs, lovedPlaylist?.id, setCurrentPlaylistSong, toggleIsLoading])
 
   useEffect(() => {
     if (!scrollViewRef.current) return
 
-    const distance = 300
     const el = scrollViewRef.current
 
-    const handler = throttle((event: Event) => {
-      const { scrollTop, scrollHeight, clientHeight } = event.target as HTMLDivElement
+    el.style.display = 'block'
+  }, [])
 
-      if (scrollTop + clientHeight >= scrollHeight - distance) {
-        setStateConfig(state => ({
-          ...state,
-          offset: state.offset + limit
-        }))
-      }
-    }, 1000)
-
-    el.addEventListener('scroll', handler)
-
-    return () => {
-      el.removeEventListener('scroll', handler)
-    }
-  }, [scrollViewRef])
+  useScrollBottom({
+    ref: scrollViewRef,
+    callback: () => {
+      setStateConfig(state => ({
+        ...state,
+        offset: state.offset + limit
+      }))
+    },
+    time: 800,
+    distance: 500
+  })
 
   return (
     <ScrollArea.Root type="scroll" className="h-full">
-      <ScrollArea.Viewport ref={scrollViewRef} className="h-full w-full">
+      <ScrollArea.Viewport ref={scrollViewRef} className="w-full h-full" asChild>
         <div>
           <div style={{ backgroundImage: `url(${cover})` }} className="w-full bg-no-repeat bg-top bg-cover">
             <div className="backdrop-blur-2xl p-4">
@@ -216,7 +217,12 @@ const PlaylistPage = () => {
           <div className="p-4">
             <ul className="space-y-2">
               {
-                loadSongs.length === 0 && (
+                isLoading && (
+                  <li className="py-2">loading</li>
+                )
+              }
+              {
+                !isLoading && currentPlaylistSong.length === 0  && (
                   <li className="text-2xl text-gray-500 text-center">暂无歌曲</li>
                 )
               }

@@ -1,7 +1,7 @@
 import { Icon } from '@iconify-icon/react/dist/iconify.js'
 import * as Avatar from '@radix-ui/react-avatar'
 import clsx from 'clsx'
-import { Fragment, memo, useMemo } from 'react'
+import { Fragment, memo } from 'react'
 import { toast } from 'react-hot-toast'
 import { Link } from 'react-router-dom'
 import { checkMusic } from '~/api/song'
@@ -34,14 +34,14 @@ const Song: React.FC<SongProps> = memo(({
   const singersText = singers.map(singer => singer.name).join(' / ')
   const image = album?.picUrl
   const playHandle = async () => {
-    if(!isCopyright) return
+    if (!isCopyright) return
 
     const { data: { success, message } } = await checkMusic(id)
 
-    if(success) {
+    if (success) {
       const { data: [song] } = await getMusic([id])
       const { data: { lrc, tlyric } } = await getLyric(id)
-      
+
       setCurrentSong({
         id,
         name,
@@ -52,7 +52,7 @@ const Song: React.FC<SongProps> = memo(({
         lyricsTranslation: tlyric.lyric,
         url: song.url,
       })
-    }else {
+    } else {
       toast.error(message)
     }
   }
@@ -65,6 +65,7 @@ const Song: React.FC<SongProps> = memo(({
         rounded overflow-hidden transition-colors
         odd:bg-gray-100 hover:bg-gray-300
         flex items-center gap-x-2 cursor-default
+        pr-2
         `,
         !isCopyright && 'opacity-25 cursor-not-allowed'
       )}
@@ -84,7 +85,7 @@ const Song: React.FC<SongProps> = memo(({
           src={image}
           alt={album?.name}
         />
-        <div 
+        <div
           className="
             absolute top-0 left-0 w-full h-full transition-opacity
             flex justify-center items-center opacity-0
@@ -99,12 +100,12 @@ const Song: React.FC<SongProps> = memo(({
           </div>
         </Avatar.Fallback>
       </Avatar.Root>
-      <span className="w-96 truncate">
+      <span className="lg:w-96 truncate">
         {name}
         &nbsp;
         {alias.length > 0 && (<span title={aliasText} className="text-gray-500">({aliasText})</span>)}
       </span>
-      <span title={singersText} className="w-48 truncate text-gray-600">
+      <span title={singersText} className="lg:w-32 truncate text-gray-600">
         {
           singers.map((singer, i) => (
             <Fragment key={singer.id}>
@@ -116,17 +117,19 @@ const Song: React.FC<SongProps> = memo(({
           ))
         }
       </span>
-      <span className="w-56 truncate text-gray-600">
+      <span className="lg:w-32 truncate text-gray-600">
         <Link to={`/album/${id}`} title={album?.name}>
           {album?.name}
         </Link>
       </span>
-      <span className="justify-self-end">
-        <Love love={isLoved} />
-      </span>
-      <span className="text-2xl text-gray-500">
-        <Icon icon="material-symbols:download" />
-      </span>
+      <div className="flex items-center">
+        <span>
+          <Love love={isLoved} />
+        </span>
+        <span className="w-6 h-6 text-2xl text-gray-500">
+          <Icon icon="material-symbols:download" />
+        </span>
+      </div>
     </li>
   )
 })

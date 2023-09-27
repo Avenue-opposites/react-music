@@ -36,16 +36,18 @@ const MusicPlayer = () => {
 
   const currentPlaylistSong = useStore(state => state.currentPlaylistSong)
   const [playMode, setPlayMode] = useState<PlayMode>(0)
+  let isNotCopyright = false
+
   const getCurrentIndex = () => {
     return currentPlaylistSong.findIndex(song => song.id === currentSong.id)
   }
 
-  const getSongUrl = async (id: number, errorCallback: (message: string) => void) => {
+  // 获取歌曲url
+  const getSongUrl = async (id: number) => {
     const { data: { success, message } } = await checkMusic(id)
 
     if (!success) {
-      errorCallback(message)
-      return
+      return Promise.reject(message)
     }
 
     const { data: [song] } = await getMusic([id])
@@ -58,10 +60,9 @@ const MusicPlayer = () => {
     }
   }
 
+  // 设置播放歌曲，如果歌曲不存在，则提示用户
   const setPlaySong = (playSong: any) => {
-    getSongUrl(playSong.id, (message) => {
-      toast.error(message)
-    })
+    return getSongUrl(playSong.id)
       .then(song => {
         if (song) {
           const { url, lyrics, lyricsTranslation } = song
@@ -78,6 +79,11 @@ const MusicPlayer = () => {
           })
         }
       })
+      .catch(message => {
+        toast.error(`${playSong.name} -> ${message}`)
+        isNotCopyright = true
+        return Promise.reject(message)
+      })   
   }
 
   const playPrev = async () => {
@@ -92,14 +98,19 @@ const MusicPlayer = () => {
   }
 
   const playNext = async () => {
-    const currentIndex = getCurrentIndex()
+    let currentIndex = getCurrentIndex()
     if (currentIndex === -1) return
+    if(isNotCopyright) ++currentIndex
 
     const nextIndex = getNextIndex('next', currentIndex, currentPlaylistSong.length, playMode)
 
     const nextSong = currentPlaylistSong[nextIndex]
 
     setPlaySong(nextSong)
+    .catch(() => {
+      playNext()
+      isNotCopyright = false
+    })
   }
 
   const [audio, state, controls] = useAudio({
@@ -111,9 +122,16 @@ const MusicPlayer = () => {
 
   const formattedTime = formatTime(state.time)
 
-  const lyric = useMemo(() =>
-    parseLyric(currentSong.lyrics, ''),
+  parseLyric(currentSong.lyrics)
+  
+  const lyrics = useMemo(() =>
+    console.log(currentSong.lyrics),
     [currentSong.lyrics]
+  )
+
+  const translationLyrics = useMemo(() => 
+    parseLyric(currentSong.lyricsTranslation), 
+    [currentSong.lyricsTranslation]
   )
 
   const close = () => {
@@ -168,7 +186,7 @@ const MusicPlayer = () => {
     <Fragment>
       {audio}
       {/* 弹出歌曲信息 */}
-      <Transition.Root className="fixed z-50 bottom-20 inset-x-0" show={isOpen}>
+      <Transition.Root className="fixed z-50 bottom-0 inset-0" show={isOpen}>
         <Transition.Child
           enter="ease-out duration-500"
           enterFrom="translate-y-full"
@@ -177,18 +195,19 @@ const MusicPlayer = () => {
           leaveTo="translate-y-full"
           as={Fragment}
         >
-          <div className="relative h-[calc(100vh-80px)] flex flex-col bg-gray-100 w-full">
+          <div className="h-full bg-gray-100 w-full pb-20">
             <ul className="p-4">
               <li>
                 <Icon onClick={close} className="text-2xl text-gray-500 -rotate-90 cursor-pointer" icon="material-symbols:arrow-back-ios-new-rounded" />
               </li>
             </ul>
             <SongDetails
+              {...currentSong}
               onTimeChange={onTimeChange}
               time={state.time}
-              lyric={lyric}
+              lyrics={lyrics}
+              lyricsTranslation={translationLyrics}
               isPlaying={state.playing}
-              {...currentSong}
             />
           </div>
         </Transition.Child>

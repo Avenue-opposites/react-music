@@ -10,12 +10,12 @@ export function formatTime(time: number) {
   return `${minute < 10 ? '0' + minute : minute}:${second < 10 ? '0' + second : second}`  
 }
 
-export function parseLyric(lyric: string, translation: string): ({
-  time: number,
-  lyric: string,
-  translation: string
-})[] {
-  if(!lyric) return []
+export interface Lyric {
+  time: number;
+  lyric: string;
+}
+
+export function parseLyric(lyric: string): Lyric[] {
 
   const parse = (lyric: string) => {
     if(!lyric) return []
@@ -35,11 +35,6 @@ export function parseLyric(lyric: string, translation: string): ({
   }
   
   const parsedLyric = parse(lyric)
-  const parsedTranslation = parse(translation)
-  const dis = parsedLyric.length - parsedTranslation.length
   
-  return (
-    parsedTranslation.length 
-    ? parsedLyric.map(({ time, lyric }, i) => ({ time, lyric, translation: i < dis ? '' : parsedTranslation[i].lyric }))
-    : parsedLyric.map(({ time, lyric }) => ({ time, lyric, translation: '' })))
+  return parsedLyric.map(({ time, lyric }) => ({ time, lyric }))
 }
