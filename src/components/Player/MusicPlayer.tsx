@@ -14,6 +14,7 @@ import { checkMusic, getMusic } from '~/api/song'
 import { random } from 'lodash'
 import { getLyric } from '~/api/lyric'
 import toast from 'react-hot-toast'
+import Drawer from '../Drawer/Drawer'
 
 enum PlayMode {
   Order,
@@ -121,11 +122,9 @@ const MusicPlayer = () => {
   })
 
   const formattedTime = formatTime(state.time)
-
-  parseLyric(currentSong.lyrics)
   
   const lyrics = useMemo(() =>
-    console.log(currentSong.lyrics),
+    parseLyric(currentSong.lyrics),
     [currentSong.lyrics]
   )
 
@@ -195,7 +194,7 @@ const MusicPlayer = () => {
           leaveTo="translate-y-full"
           as={Fragment}
         >
-          <div className="h-full bg-gray-100 w-full pb-20">
+          <div className="h-screen bg-gray-100 w-full pb-20">
             <ul className="p-4">
               <li>
                 <Icon onClick={close} className="text-2xl text-gray-500 -rotate-90 cursor-pointer" icon="material-symbols:arrow-back-ios-new-rounded" />
@@ -214,10 +213,11 @@ const MusicPlayer = () => {
       </Transition.Root>
       <div
         className="
+        hidden lg:flex
         fixed z-50 inset-x-0 h-20 
         bg-white bottom-0 left-0
         border-t
-        flex justify-between items-center px-2
+        justify-between items-center px-2
       "
       >
         {/* 进度条 */}

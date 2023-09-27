@@ -31,8 +31,6 @@ const SongDetails: React.FC<SongDetailsProps> = ({
   lyricsTranslation,
   onTimeChange
 }) => {
-  if(!id) return
-
   const [isTranslate, setIsTranslate] = useState(false)
   const scrollViewportRef = useRef<HTMLDivElement | null>(null)
   const listRef = useRef<HTMLUListElement | null>(null)
@@ -47,10 +45,10 @@ const SongDetails: React.FC<SongDetailsProps> = ({
   }
 
   const getLyricView = (lyrics: Lyric[]) => {
-    console.log(lyrics, time)
-    
-
     if (!lyrics.length) {
+      if(isTranslate) {
+        return <li>暂无翻译歌词</li>
+      }
       return <li>暂无歌词</li>
     }
 
@@ -100,6 +98,8 @@ const SongDetails: React.FC<SongDetailsProps> = ({
     })
 
   }, [activeLyricIndex, isScrolling])
+
+  if(!id) return
 
   return (
     <ScrollArea.Root type="scroll" className="w-full h-[calc(100%-62px)]">
