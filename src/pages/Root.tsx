@@ -6,6 +6,7 @@ import MobileStatusBar from '~/components/Nav/MobileStatusBar'
 import DesktopStatusBar from '~/components/Nav/DesktopStatusBar'
 import Search from '~/components/Search/Search'
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router'
 import { getLoginStatus } from '~/api/login'
 import { getAllPlaylist } from '~/api/user'
 import MusicPlayer from '~/components/Player/MusicPlayer'
@@ -24,12 +25,19 @@ const Root = () => {
     lovedPlaylist,
   } = useStore(state => state)
 
+  const navigate = useNavigate()
+
   useEffect(() => {
 
     (async () => {
       try {
         // 获取登录状态
         const { data } = await getLoginStatus()
+
+        if(data.code !== 200) {
+          navigate('/login', { replace: true })
+        }
+
         const { account, profile } = data
         const user = { ...account, ...profile }
         setUser(user)
@@ -43,17 +51,22 @@ const Root = () => {
       }
     })()
 
-  }, [setUser, setPlaylist])
+  }, [setUser, setPlaylist, navigate])
   
-  const love = lovedPlaylist()
+  // 喜欢的歌单
+  const loved = lovedPlaylist()
+  // 收藏的歌单
+  const favorite = favoritePlaylist()
+  // 创建的歌单
+  const created = createdPlaylist()
 
   useEffect(() => {
     
-    getPlaylistAllSong(love?.id, love?.trackCount)
+    getPlaylistAllSong(loved?.id, loved?.trackCount)
     .then((songs) => {
       setLovedSongs(songs)
     })
-  }, [love, setLovedSongs])
+  }, [loved, setLovedSongs])
 
 
   return (
@@ -67,9 +80,9 @@ const Root = () => {
       </div>
       <MobileNav />
       <DesktopNav
-        lovedPlaylist={love}
-        favoritePlaylist={favoritePlaylist()}
-        createdPlaylist={createdPlaylist()}
+        lovedPlaylist={loved}
+        favoritePlaylist={favorite}
+        createdPlaylist={created}
       />
       <MusicPlayer />
     </main>
