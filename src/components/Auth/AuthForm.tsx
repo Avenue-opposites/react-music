@@ -94,7 +94,9 @@ const AuthForm = () => {
     setIsLoading(true)
 
     const { phone, captcha, password, nickname } = data
+    //登录
     if(variant === 'LOGIN') {
+      //检查验证码
       verifyCaptcha(phone, captcha)
       .then((response) => {
         const verified = response.data
