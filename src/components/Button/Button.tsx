@@ -48,7 +48,7 @@ const Button: React.FC<ButtonProps> = ({
       style={{ fontSize }}
       className={clsx(
         className,
-        `text-sm p-2 transition-all
+        `text-sm p-2 transition-colors
          inline-flex items-center 
          justify-center gap-x-0.5
         `,
