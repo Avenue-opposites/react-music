@@ -6,3 +6,7 @@ export type StringKeyValue<T, K extends string>
 
 export type KeyValue<T, K extends PropertyKey = keyof T> 
 = T extends Record<K, infer V> ? V : never
+
+// 将指定键设置为可选
+export type PartialKey<T, K extends keyof T> = 
+  Partial<Pick<T, K>> & Omit<T, K>

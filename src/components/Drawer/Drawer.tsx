@@ -1,16 +1,14 @@
-import { Transition, Dialog } from '@headlessui/react'
+import { Transition, TransitionClasses, Dialog } from '@headlessui/react'
 import { Fragment } from 'react'
 import clsx from 'clsx'
 
 type Direction = 'left' | 'right' | 'top' | 'bottom'
 
-
-interface DrawerProps {
+export interface DrawerProps extends TransitionClasses, React.HTMLAttributes<HTMLDivElement> {
   open: boolean;
   onClose: () => void;
   children: React.ReactNode;
   direction?: Direction;
-  zIndex?: number;
 }
 
 const classes = {
@@ -41,9 +39,18 @@ const Drawer: React.FC<DrawerProps> = ({
   onClose,
   children,
   direction = 'left',
+  enter,
+  enterFrom,
+  enterTo,
+  entered,
+  leave,
+  leaveFrom,
+  leaveTo,
+  ...otherProps
 }) => {
+
   return (
-    <Transition.Root show={open}>
+    <Transition.Root show={open} as={Fragment}>
       <Dialog className="relative z-50" onClose={onClose}>
         <Transition.Child
           enter="ease-out duration-300"
@@ -57,15 +64,19 @@ const Drawer: React.FC<DrawerProps> = ({
         </Transition.Child>
         <Dialog.Panel>
           <Transition.Child
-            enter="ease-out duration-300"
-            enterFrom={classes[direction].from}
-            enterTo={classes[direction].to}
-            leave="ease-in duration-200"
-            leaveTo={classes[direction].from}
+            enter={enter || 'ease-out duration-300'}
+            enterFrom={clsx(classes[direction].from, enterFrom)}
+            enterTo={clsx(classes[direction].to, enterTo)}
+            entered={entered}
+            leave={leave || 'ease-in duration-200'}
+            leaveFrom={leaveFrom || classes[direction].to}
+            leaveTo={clsx(classes[direction].from, leaveTo)}
             as={Fragment}
           >
-            <div className={clsx('fixed bg-white',classes[direction].classes)}>
-              {children}
+            <div className={clsx('fixed',classes[direction].classes)}>
+              <div {...otherProps}>
+                {children}
+              </div>
             </div>
           </Transition.Child>
         </Dialog.Panel>
