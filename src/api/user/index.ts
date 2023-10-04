@@ -1,5 +1,6 @@
 import api from '..'
 
+// 获取用户歌单
 export async function getUserPlaylists(
   query: {
     uid: number;
@@ -12,6 +13,7 @@ export async function getUserPlaylists(
   return api.get(`/user/playlist?uid=${uid}&limit=${limit}&offset=${offset}`)
 }
 
+// 获取用户所有歌单
 export const getAllPlaylist = async (uid: number) => {
   try {
     const playlists = []
@@ -29,4 +31,12 @@ export const getAllPlaylist = async (uid: number) => {
   } catch (error) {
     throw new Error('获取歌单失败')
   }
+}
+
+// 获取用户喜欢歌曲id
+export async function getLikeSongIdList(query: {
+  uid: number;
+}) {
+  const { uid } = query
+  return api.get(`/likelist?uid=${uid}`)
 }
