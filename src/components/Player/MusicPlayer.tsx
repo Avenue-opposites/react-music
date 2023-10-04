@@ -4,7 +4,7 @@ import * as Slider from '@radix-ui/react-slider'
 import { Transition } from '@headlessui/react'
 import { Icon } from '@iconify-icon/react'
 import { useAudio } from 'react-use'
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import clsx from 'clsx'
 import { useStore } from '~/store'
@@ -14,7 +14,6 @@ import { checkMusic, getMusic } from '~/api/song'
 import { random } from 'lodash'
 import { getLyric } from '~/api/lyric'
 import toast from 'react-hot-toast'
-import Drawer from '../Drawer/Drawer'
 
 enum PlayMode {
   Order,
@@ -37,7 +36,6 @@ const MusicPlayer = () => {
 
   const currentPlaylistSong = useStore(state => state.currentPlaylistSong)
   const [playMode, setPlayMode] = useState<PlayMode>(0)
-  let isNotCopyright = false
 
   const getCurrentIndex = () => {
     return currentPlaylistSong.findIndex(song => song.id === currentSong.id)
@@ -62,7 +60,8 @@ const MusicPlayer = () => {
   }
 
   // 设置播放歌曲，如果歌曲不存在，则提示用户
-  const setPlaySong = (playSong: any) => {
+  const setPlaySong = (playSong: any, index?: number) => {
+    
     return getSongUrl(playSong.id)
       .then(song => {
         if (song) {
@@ -81,13 +80,22 @@ const MusicPlayer = () => {
         }
       })
       .catch(message => {
+        setCurrentSong({
+          id: playSong.id,
+          name: playSong.name,
+          image: playSong.al.picUrl,
+          singers: playSong.ar,
+          album: playSong.al,
+          url: '',
+          lyrics: '',
+          lyricsTranslation: ''
+        })
         toast.error(`${playSong.name} -> ${message}`)
-        isNotCopyright = true
-        return Promise.reject(message)
-      })   
+        return Promise.reject(index)
+      })
   }
 
-  const playPrev = async () => {
+  const playPrev = () => {
     const currentIndex = getCurrentIndex()
     if (currentIndex === -1) return
 
@@ -98,19 +106,17 @@ const MusicPlayer = () => {
     setPlaySong(prevSong)
   }
 
-  const playNext = async () => {
-    let currentIndex = getCurrentIndex()
+  const playNext = (_event: SyntheticEvent | null, index?: number) => {
+    const currentIndex = index || getCurrentIndex()
     if (currentIndex === -1) return
-    if(isNotCopyright) ++currentIndex
 
     const nextIndex = getNextIndex('next', currentIndex, currentPlaylistSong.length, playMode)
 
     const nextSong = currentPlaylistSong[nextIndex]
 
-    setPlaySong(nextSong)
-    .catch(() => {
-      playNext()
-      isNotCopyright = false
+    setPlaySong(nextSong, nextIndex)
+    .catch((index) => {
+      playNext(null ,index)
     })
   }
 
