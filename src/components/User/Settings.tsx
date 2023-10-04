@@ -46,6 +46,7 @@ const Settings: React.FC<SettingsProps> = ({
         " 
         variant="custom"
         onClick={handleLogout}
+        icon="material-symbols:logout-rounded"
         fullWidth
       >
         退出登录
