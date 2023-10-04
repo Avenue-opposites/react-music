@@ -2,7 +2,7 @@ import { Icon, IconifyIcon } from '@iconify-icon/react'
 import clsx from 'clsx'
 
 type Variant = 'primary' | 'secondary' | 'error' | 'custom'
-type Round = 'none' | 'small' | 'medium' | 'large'
+type Round = 'none' | 'small' | 'medium' | 'large' | 'full'
 
 interface ButtonProps {
   className?: string,
@@ -10,7 +10,7 @@ interface ButtonProps {
   variant?: Variant;
   disabled?: boolean;
   icon?: IconifyIcon | string;
-  children?: string;
+  children?: React.ReactNode;
   onClick?: () => void;
   fullWidth?: boolean;
   roundType?: Round;
@@ -28,7 +28,8 @@ const round: Record<Round, string> = {
   small: 'rounded-sm',
   medium: 'rounded-md',
   large: 'rounded-lg',
-  none: 'rounded-none'
+  none: 'rounded-none',
+  full: 'rounded-full'
 }
 
 const Button: React.FC<ButtonProps> = ({
