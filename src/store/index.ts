@@ -4,6 +4,7 @@ type RecordState = Record<string, any>
 
 export type State = {
   user: RecordState,
+  lovedSongIds: number[],
   playlist: RecordState[],
   lovedSongs: RecordState[],
   currentPlaylistSong: RecordState[],
@@ -21,6 +22,7 @@ export type State = {
 
 export type Action = {
   setUser: (user: RecordState) => void,
+  setLovedSongIds: (lovedSongIds: number[]) => void,
   setPlaylist: (playlist: RecordState[]) => void,
   setCurrentSong: (currentSong: State['currentSong']) => void,
   setLovedSongs: (lovedSongs: RecordState[]) => void,
@@ -33,6 +35,7 @@ export type Action = {
 
 const initialState: State = {
   user: {},
+  lovedSongIds: [],
   playlist: [],
   lovedSongs: [],
   currentPlaylistSong: [],
@@ -52,6 +55,7 @@ export const useStore = create<State & Action>((set, get) => ({
   ...initialState,
   // set
   setUser: (user) => set({ user }),
+  setLovedSongIds: (lovedSongIds) => set({ lovedSongIds }),
   setPlaylist: (playlist) => set({ playlist }),
   setCurrentSong: (currentSong) => set({ currentSong }),
   setLovedSongs: (lovedSongs) => set({ lovedSongs }),
