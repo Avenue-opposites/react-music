@@ -21,7 +21,7 @@ type Form = {
 
 const PlaylistPage = () => {
   const[isLoading, toggleIsLoading] = useToggle(true)
-  const [lovedSongs, lovedPlaylist] = useStore(state => [state.lovedSongs, state.lovedPlaylist()])
+  const [lovedSongs, lovedPlaylist, lovedSongIds] = useStore(state => [state.lovedSongs, state.lovedPlaylist(), state.lovedSongIds])
   const [currentPlaylistSong, setCurrentPlaylistSong] = useStore(state => [state.currentPlaylistSong, state.setCurrentPlaylistSong])
   const scrollViewRef = useRef<HTMLDivElement | null>(null)
   const limit = 50
@@ -236,7 +236,7 @@ const PlaylistPage = () => {
                   alias={song.alia}
                   singers={song.ar}
                   isCopyright
-                  isLoved={lovedSongs.some(s => s.id === song.id)}
+                  isLoved={lovedSongIds.includes(song.id)}
                 />
                 )
               }

@@ -8,7 +8,7 @@ import Search from '~/components/Search/Search'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { getLoginStatus } from '~/api/login'
-import { getAllPlaylist } from '~/api/user'
+import { getAllPlaylist, getLikeSongIdList } from '~/api/user'
 import MusicPlayer from '~/components/Player/MusicPlayer'
 import { getPlaylistAllSong } from '~/api/playlist'
 
@@ -23,6 +23,7 @@ const Root = () => {
     createdPlaylist,
     favoritePlaylist,
     lovedPlaylist,
+    setLovedSongIds
   } = useStore(state => state)
 
   const navigate = useNavigate()
@@ -41,10 +42,14 @@ const Root = () => {
         const { account, profile } = data
         const user = { ...account, ...profile }
         setUser(user)
-
+        
         // 获取用户歌单
         const playlist = await getAllPlaylist(user.userId)
         setPlaylist(playlist)
+
+        // 获取用户喜欢的歌曲id
+        const likeIds = await getLikeSongIdList({ uid: user.userId })
+        setLovedSongIds(likeIds.data.ids)
         
       } catch (error) {
         console.error('获取登录状态失败', error)
