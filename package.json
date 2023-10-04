@@ -21,7 +21,6 @@
     "@tailwindcss/forms": "^0.5.5",
     "@types/lodash": "^4.14.197",
     "@types/node": "^20.5.3",
-    "NeteaseCloudMusicApi": "^4.10.1",
     "autoprefixer": "^10.4.15",
     "axios": "^1.4.0",
     "clsx": "^2.0.0",
