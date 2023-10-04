@@ -38,3 +38,16 @@ export async function getComment(query: CommentQuery) {
 
   return api.get(`/comment/new?id=${id}&type=${type}&PageNo=${PageNo}&PageSize=${PageSize}&sortType=${sortType}${cursorStr}`)
 }
+
+interface CommentLikeQuery {
+  id: number;
+  type: Comment;
+  cid: number;
+  like: boolean;
+}
+
+export async function commentLike(query: CommentLikeQuery) {
+  const { id, type, cid, like } = query
+
+  return api.post(`/comment/like?id=${id}&type=${type}&cid=${cid}&t=${Number(like)}`)
+}
