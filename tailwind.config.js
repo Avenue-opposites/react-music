@@ -11,6 +11,7 @@ export default {
     extend: {
       animation: {
         'spin-slow': 'spin 3s linear infinite',
+        'jump-once': 'jump .3s ease-in-out',
         'disk-spin': 'spin 40s linear infinite',
         shake: 'shake 0.3s ease-in-out',
       },
@@ -24,6 +25,17 @@ export default {
           },
           '66%': {
             transform: 'translateX(-2%)',
+          },
+        },
+        jump: {
+          '0%': {
+            transform: 'translateY(0)',
+          },
+          '50%': {
+            transform: 'translateY(-10px)',
+          },
+          '100%': {
+            transform: 'translateY(0)',
           },
         }
       }
