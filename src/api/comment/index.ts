@@ -17,26 +17,25 @@ export async function getMusicComment(query: MusicCommentQuery) {
   return api.get(`/comment/music?id=${id}${limitStr}${offsetStr}${beforeStr}`)
 }
 
-type BaseCommentQuery = {
+type BaseGETCommentQuery = {
   id: number;
   type: Comment;
-  PageNo?: number;
-  PageSize?: number;
-  sortType?: CommentSort;
+  sortType: CommentSort;
+  pageNo?: number;
+  pageSize?: number;
   cursor?: number;
 }
 
 type GETCommentQuery = 
-  BaseCommentQuery | 
-  (Omit<BaseCommentQuery, 'sortType'> & { sortType: CommentSort.Time; cursor: number })
-
+  BaseGETCommentQuery | 
+  (Omit<BaseGETCommentQuery, 'sortType'> & { sortType: CommentSort.Time; cursor: number })
 
 export async function getComment(query: GETCommentQuery) {
-  const { id, type, PageNo = 1, PageSize = 20, sortType = CommentSort.Recommended, cursor } = query
+  const { id, type, pageNo = 1, pageSize = 20, sortType, cursor } = query
 
   const cursorStr = (sortType === CommentSort.Time && cursor) ? `&cursor=${cursor}` : ''
 
-  return api.get(`/comment/new?id=${id}&type=${type}&PageNo=${PageNo}&PageSize=${PageSize}&sortType=${sortType}${cursorStr}`)
+  return api.get(`/comment/new?id=${id}&type=${type}&pageNo=${pageNo}&pageSize=${pageSize}&sortType=${sortType}${cursorStr}`)
 }
 
 interface CommentLikeQuery {
@@ -52,13 +51,18 @@ export async function commentLike(query: CommentLikeQuery) {
   return api.post(`/comment/like?id=${id}&type=${type}&cid=${cid}&t=${Number(like)}`)
 }
 
-interface CommentQuery {
+interface BaseCommentQuery {
   type: Comment;
   action: CommentAction;
   id: number;
   content: string;
   commentId?: number;
 }
+
+type CommentQuery = 
+  BaseCommentQuery |
+  (Omit<BaseCommentQuery, 'action'> & { action: CommentAction.Reply; commentId: number }) |
+  (Omit<BaseCommentQuery, 'action'> & { action: CommentAction.Delete; commentId: number })
 
 export async function comment(query: CommentQuery) {
   const { type, action, id, content, commentId } = query
