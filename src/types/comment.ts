@@ -19,3 +19,10 @@ export const enum CommentSort {
   //时间
   Time
 }
+
+//评论操作
+export const enum CommentAction {
+  Delete,
+  Send,
+  Reply
+}
