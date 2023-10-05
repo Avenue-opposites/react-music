@@ -23,12 +23,12 @@ type BaseGETCommentQuery = {
   sortType: CommentSort;
   pageNo?: number;
   pageSize?: number;
-  cursor?: number;
+  cursor?: string;
 }
 
 type GETCommentQuery = 
   BaseGETCommentQuery | 
-  (Omit<BaseGETCommentQuery, 'sortType'> & { sortType: CommentSort.Time; cursor: number })
+  (Omit<BaseGETCommentQuery, 'sortType'> & { sortType: CommentSort.Time; cursor: string })
 
 export async function getComment(query: GETCommentQuery) {
   const { id, type, pageNo = 1, pageSize = 20, sortType, cursor } = query
