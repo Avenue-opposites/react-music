@@ -26,7 +26,7 @@ type BaseGETCommentQuery = {
   cursor?: string;
 }
 
-type GETCommentQuery = 
+export type GETCommentQuery = 
   BaseGETCommentQuery | 
   (Omit<BaseGETCommentQuery, 'sortType'> & { sortType: CommentSort.Time; cursor: string })
 
@@ -38,7 +38,7 @@ export async function getComment(query: GETCommentQuery) {
   return api.get(`/comment/new?id=${id}&type=${type}&pageNo=${pageNo}&pageSize=${pageSize}&sortType=${sortType}${cursorStr}`)
 }
 
-interface CommentLikeQuery {
+export interface CommentLikeQuery {
   id: number;
   type: Comment;
   cid: number;
@@ -59,7 +59,7 @@ interface BaseCommentQuery {
   commentId?: number;
 }
 
-type CommentQuery = 
+export type CommentQuery = 
   BaseCommentQuery |
   (Omit<BaseCommentQuery, 'action'> & { action: CommentAction.Reply; commentId: number }) |
   (Omit<BaseCommentQuery, 'action'> & { action: CommentAction.Delete; commentId: number })
