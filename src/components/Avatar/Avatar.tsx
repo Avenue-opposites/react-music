@@ -10,7 +10,7 @@ interface AvatarProps extends AProps {
 }
 
 const Avatar: React.FC<AvatarProps> = ({
-  size,
+  size = '56px',
   avatarFrameSrc,
   className,
   src,
@@ -25,7 +25,7 @@ const Avatar: React.FC<AvatarProps> = ({
            ring-sky-500 ring-1 ring-offset-base-100 ring-offset-0
             cursor-pointer relative aspect-square
           `,
-            className || 'w-14 h-14'
+            className
           )}
           {...otherProps}
         >

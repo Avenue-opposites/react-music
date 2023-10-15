@@ -1,11 +1,10 @@
-import { PartialKey } from '~/types/utils'
 import Drawer, { DrawerProps } from '../Drawer/Drawer'
 import * as Avatar from '@radix-ui/react-avatar'
 import Button from '../Button/Button'
 import { logout } from '~/api/login'
 import { useNavigate } from 'react-router'
 
-interface SettingsProps extends PartialKey<Omit<DrawerProps, 'direction'>, 'children'> {
+interface SettingsProps extends Omit<DrawerProps, 'direction' | 'children' | 'isShowBackdrop'> {
   user: any;
 }
 

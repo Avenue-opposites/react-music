@@ -7,8 +7,7 @@ type Form = {
   comment: string;
 } | FieldValues
 
-export type SendHandler =  (message: string) => void
-
+export type SendHandler = (comment: string) => Promise<any>
 interface CommentInputProps {
   onSend: SendHandler;
   placeholder?: string;
@@ -16,16 +15,22 @@ interface CommentInputProps {
 
 const CommentInput: React.FC<CommentInputProps> = ({
   onSend,
-  placeholder
+  placeholder = '',
 }) => {
   const user = useStore(state => state.user)
+  
   const { 
     register, 
     handleSubmit, 
+    setValue,
   } = useForm<Form>()
 
   const onSubmit: SubmitHandler<Form> = (data) => {
-    onSend(data.comment.trim())
+    const content = data.comment.trim()
+    onSend(content)
+    .then(() => {
+      setValue('comment', '')
+    })
   }
 
   return (
@@ -42,7 +47,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
         {...register('comment', { required: true })} 
         onKeyDown={(e) => e.stopPropagation()}
       />
-      <Button type="submit" className="w-16 h-10 peer-focus:h-16 transition-all" variant="primary">发布</Button>
+      <Button type="submit" className="w-16 h-10 peer-focus:h-16" variant="primary">发布</Button>
     </form>
   )
 }
