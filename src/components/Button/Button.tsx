@@ -19,7 +19,7 @@ interface ButtonProps {
 
 const classes: Record<Variant, string> = {
   primary: 'bg-sky-500 hover:bg-sky-600 text-white',
-  secondary: 'bg-gray-100 hover:bg-gray-600 text-gray-700',
+  secondary: 'bg-gray-300 hover:bg-gray-400 text-white',
   error: 'bg-red-500 hover:bg-red-600 text-white',
   custom: ''
 }

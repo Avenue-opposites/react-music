@@ -1,14 +1,22 @@
-import { ClimbingBoxLoader } from 'react-spinners'
+import clsx from 'clsx'
+import { HTMLAttributes } from 'react'
+import { ClipLoader } from 'react-spinners'
 
-const Loading = () => {
+interface LoadingProps extends HTMLAttributes<HTMLDivElement> {
+  isLoading: boolean;
+  size: number;
+}
+
+const Loading: React.FC<LoadingProps> = ({
+  className,
+  isLoading,
+  size,
+  ...otherProps
+}) => {
   return (
-    <div className="
-      fixed inset-0 bg-white bg-opacity-75 
-      dark:bg-black
-      flex justify-center items-center
-      "
-    >
-      <ClimbingBoxLoader color="#0ea5e9" />
+    <div style={{ fontSize: size }} className={clsx(className ,'justify-center items-center gap-x-1', isLoading ? 'flex' : 'hidden')} {...otherProps}>
+      <ClipLoader className="text-sky-500" size={size} />
+      加载中......
     </div>
   )
 }

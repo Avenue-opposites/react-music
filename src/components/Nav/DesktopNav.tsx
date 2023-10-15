@@ -33,7 +33,7 @@ const DesktopNav: React.FC<DesktopNavProps> = ({
           <div className="w-64 p-4 flex flex-col gap-y-2">
             {routes.map((route) => <DesktopNavItem key={route.href} {...route} />)}
             <DesktopNavItem href={`/playlist/${id}`} icon="material-symbols:heart-check-outline-rounded">我喜欢的音乐</DesktopNavItem>
-            <Separator />
+            <Separator orientation="vertical" />
             <CollapsiblePlaylist title="创建的歌单" playlist={createdPlaylist} />
             <CollapsiblePlaylist title="收藏的歌单" playlist={favoritePlaylist} />
           </div>

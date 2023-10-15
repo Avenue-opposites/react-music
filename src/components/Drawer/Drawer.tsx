@@ -7,6 +7,7 @@ type Direction = 'left' | 'right' | 'top' | 'bottom'
 export interface DrawerProps extends TransitionClasses, React.HTMLAttributes<HTMLDivElement> {
   open: boolean;
   onClose: () => void;
+  isShowBackdrop?: boolean;
   children: React.ReactNode;
   direction?: Direction;
 }
@@ -38,6 +39,7 @@ const Drawer: React.FC<DrawerProps> = ({
   open,
   onClose,
   children,
+  isShowBackdrop = true,
   direction = 'left',
   enter,
   enterFrom,
@@ -52,16 +54,20 @@ const Drawer: React.FC<DrawerProps> = ({
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog className="relative z-50" onClose={onClose}>
-        <Transition.Child
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveTo="opacity-0"
-          as={Fragment}
-        >
-          <div className="fixed inset-0 bg-black bg-opacity-75" />
-        </Transition.Child>
+        {
+          isShowBackdrop && (
+            <Transition.Child
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveTo="opacity-0"
+              as={Fragment}
+            >
+              <div className="fixed inset-0 bg-black bg-opacity-75" />
+            </Transition.Child>
+          )
+        }
         <Dialog.Panel>
           <Transition.Child
             enter={enter || 'ease-out duration-300'}
@@ -73,7 +79,7 @@ const Drawer: React.FC<DrawerProps> = ({
             leaveTo={clsx(classes[direction].from, leaveTo)}
             as={Fragment}
           >
-            <div className={clsx('fixed',classes[direction].classes)}>
+            <div className={clsx('fixed', classes[direction].classes)}>
               <div {...otherProps}>
                 {children}
               </div>

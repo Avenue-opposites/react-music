@@ -9,11 +9,11 @@ import QRCodeModal from '../Modal/QRCodeModal'
 import Loading from '~/components/Loading/Loading'
 import { Store } from '~/store/user'
 
-import { 
-  visitorLogin, 
-  getCaptcha, 
+import {
+  visitorLogin,
+  getCaptcha,
   verifyCaptcha,
-  phoneCaptchaLogin, 
+  phoneCaptchaLogin,
 } from '~/api/login'
 
 type Variant = 'LOGIN' | 'REGISTER'
@@ -49,25 +49,25 @@ const AuthForm = () => {
         setIsLoading(true)
 
         visitorLogin()
-        .then((response) => {
-          const { data } = response
-          const { code, cookie } = data
-          console.log(data)
-          
-          switch (code) {
-            case 400: {
-              toast.error(`登录失败，错误码:${data.code}`)
-              break
+          .then((response) => {
+            const { data } = response
+            const { code, cookie } = data
+            console.log(data)
+
+            switch (code) {
+              case 400: {
+                toast.error(`登录失败，错误码:${data.code}`)
+                break
+              }
+              case 200: {
+                toast.success('登录成功')
+                document.cookie = cookie
+                navigate('/', { replace: true })
+                break
+              }
             }
-            case 200: {
-              toast.success('登录成功')
-              document.cookie = cookie
-              navigate('/', { replace: true })
-              break
-            }
-          }
-        })
-        .finally(() => setIsLoading(false))
+          })
+          .finally(() => setIsLoading(false))
       }
     }
   }
@@ -84,7 +84,7 @@ const AuthForm = () => {
   const sendCaptcha = debounce(() => {
     const phone = getValues('phone')
     getCaptcha(phone).then(({ data: isSend }) => {
-      if(isSend) {
+      if (isSend) {
         toast('验证码已发送')
       }
     })
@@ -95,32 +95,36 @@ const AuthForm = () => {
 
     const { phone, captcha, password, nickname } = data
     //登录
-    if(variant === 'LOGIN') {
+    if (variant === 'LOGIN') {
       //检查验证码
       verifyCaptcha(phone, captcha)
-      .then((response) => {
-        const verified = response.data
-        if(verified) {
-          return phoneCaptchaLogin(phone, password)
-        }
+        .then((response) => {
+          const verified = response.data
+          if (verified) {
+            return phoneCaptchaLogin(phone, password)
+          }
 
-        toast.error('验证码错误')
-        return Promise.reject(response)
-      })
-      .then(({ data }) => {
-        console.log('Login',data)
-        document.cookie = data.cookie
-        navigate('/', { replace: true })
-      })
-      .finally(() => setIsLoading(false))
-    }else {
+          toast.error('验证码错误')
+          return Promise.reject(response)
+        })
+        .then(({ data }) => {
+          console.log('Login', data)
+          document.cookie = data.cookie
+          navigate('/', { replace: true })
+        })
+        .finally(() => setIsLoading(false))
+    } else {
       //注册
     }
   }
 
   return (
     <Fragment>
-      {isLoading && <Loading />}
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-75">
+          <Loading size={48} isLoading={isLoading} />
+        </div>
+      )}
       <QRCodeModal isOpen={isOpen} onClose={close} />
       <div className="mt-8 mx-auto w-3/4 min-w-[400px] max-w-[600px]">
         <div
