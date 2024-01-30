@@ -133,6 +133,7 @@ const MusicPlayer = () => {
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       const { key } = event
+      event.preventDefault()
       switch (key) {
         case ' ': {
           state.playing ? pause() : play()
