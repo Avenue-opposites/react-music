@@ -4,20 +4,21 @@ import CollapsiblePlaylist from './Playlist/CollapsiblePlaylist'
 import * as ScrollArea from '@radix-ui/react-scroll-area'
 import Separator from '../Separator'
 import { useMemo } from 'react'
+import { Playlist } from '~/store/playlist'
 
 interface DesktopNavProps {
-  createdPlaylist: any[];
-  favoritePlaylist: any[];
-  lovedPlaylist: any
+  createdPlaylist: Playlist[];
+  favoritePlaylist: Playlist[];
+  likedPlaylist: Playlist
 }
 
 const DesktopNav: React.FC<DesktopNavProps> = ({
   createdPlaylist,
   favoritePlaylist,
-  lovedPlaylist
+  likedPlaylist
 }) => {
   const routes = useNavRoutes('desktop')
-  const id = useMemo(() => lovedPlaylist?.id, [lovedPlaylist])  
+  const id = useMemo(() => likedPlaylist?.id, [likedPlaylist])  
 
   return (
     <div

@@ -3,9 +3,10 @@ import Search from '../Search/Search'
 import Settings from '../User/Settings'
 import { Fragment } from 'react'
 import { useToggle } from 'react-use'
+import { User } from '~/store/user'
 
 interface DesktopStatusBarProps {
-  user: any
+  user: User
 }
 
 const DesktopStatusBar: React.FC<DesktopStatusBarProps> = ({
@@ -34,7 +35,7 @@ const DesktopStatusBar: React.FC<DesktopStatusBarProps> = ({
         >
           <Avatar.Image
             className="object-cover"
-            src={user.avatarUrl}
+            src={user.avatar}
             alt="avatar"
           />
         </Avatar.Root>

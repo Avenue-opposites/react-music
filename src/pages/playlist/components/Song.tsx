@@ -4,18 +4,11 @@ import clsx from 'clsx'
 import { Fragment, memo } from 'react'
 import { toast } from 'react-hot-toast'
 import { Link } from 'react-router-dom'
-import { checkMusic } from '~/api/song'
-import { useStore } from '~/store'
-import { getMusic } from '~/api/song'
-import { getLyric } from '~/api/lyric'
 import Love from './Love'
+import { Song as SongType, useSongStore } from '~/store/song'
+import { getSongUrl } from '~/shared'
 
-interface SongProps {
-  id: number;
-  name: string;
-  album: any;
-  singers: any[];
-  alias: string[];
+interface SongProps extends SongType {
   isCopyright: boolean;
   isLoved: boolean;
 }
@@ -29,32 +22,23 @@ const Song: React.FC<SongProps> = memo(({
   isCopyright,
   isLoved
 }) => {
-  const setCurrentSong = useStore(state => state.setCurrentSong)
+  const setCurrentSong = useSongStore(state => state.setCurrentPlayedSong)
   const aliasText = alias.join('')
   const singersText = singers.map(singer => singer.name).join(' / ')
-  const image = album?.picUrl
   const playHandle = async () => {
     if (!isCopyright) return
 
-    const { data: { success, message } } = await checkMusic(id)
-
-    if (success) {
-      const { data: [song] } = await getMusic([id])
-      const { data: { lrc, tlyric } } = await getLyric(id)
-
+    getSongUrl(id)
+    .then(song => {
       setCurrentSong({
         id,
         name,
-        image,
-        singers,
         album,
-        lyrics: lrc.lyric,
-        lyricsTranslation: tlyric.lyric,
-        url: song.url,
+        singers,
+        alias,
+        ...song
       })
-    } else {
-      toast.error(message)
-    }
+    }).catch(reason =>toast.error(reason))
   }
 
   return (
@@ -82,8 +66,8 @@ const Song: React.FC<SongProps> = memo(({
         object-cover
         w-full h-full
       "
-          src={image}
-          alt={album?.name}
+          src={album.picture}
+          alt={album.name}
         />
         <div
           className="

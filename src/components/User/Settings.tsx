@@ -3,9 +3,10 @@ import * as Avatar from '@radix-ui/react-avatar'
 import Button from '../Button/Button'
 import { logout } from '~/api/login'
 import { useNavigate } from 'react-router'
+import { User } from '~/store/user'
 
 interface SettingsProps extends Omit<DrawerProps, 'direction' | 'children' | 'isShowBackdrop'> {
-  user: any;
+  user: User;
 }
 
 const Settings: React.FC<SettingsProps> = ({
@@ -32,7 +33,7 @@ const Settings: React.FC<SettingsProps> = ({
         >
           <Avatar.Image
             className="object-cover"
-            src={user.avatarUrl}
+            src={user.avatar}
             alt="avatar"
           />
         </Avatar.Root>

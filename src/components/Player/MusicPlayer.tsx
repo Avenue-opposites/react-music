@@ -4,16 +4,15 @@ import * as Slider from '@radix-ui/react-slider'
 import { Transition } from '@headlessui/react'
 import { Icon } from '@iconify-icon/react'
 import { useAudio } from 'react-use'
-import { Fragment, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, SyntheticEvent, useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import clsx from 'clsx'
-import { useStore } from '~/store'
-import { formatTime, parseLyric } from '~/utils'
+import { formatTime } from '~/utils'
 import SongDetails from './SongDetails'
-import { checkMusic, getMusic } from '~/api/song'
 import { random } from 'lodash'
-import { getLyric } from '~/api/lyric'
 import toast from 'react-hot-toast'
+import { Song, useSongStore } from '~/store/song'
+import { getSongUrl } from '~/shared'
 
 enum PlayMode {
   Order,
@@ -30,67 +29,41 @@ const PlayIconMap = [
 ]
 
 const MusicPlayer = () => {
-  const [currentSong, setCurrentSong] = useStore(state => [state.currentSong, state.setCurrentSong])
+  const [currentSong, setCurrentSong] = useSongStore(state => [state.currentPlayedSong, state.setCurrentPlayedSong])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoop, setIsLoop] = useState(false)
 
-  const currentPlaylistSong = useStore(state => state.currentPlaylistSong)
+  const currentPlaylistSong = useSongStore(state => state.currentPlaylistSong)
   const [playMode, setPlayMode] = useState<PlayMode>(0)
 
   const getCurrentIndex = () => {
-    return currentPlaylistSong.findIndex(song => song.id === currentSong.id)
-  }
-
-  // 获取歌曲url
-  const getSongUrl = async (id: number) => {
-    const { data: { success, message } } = await checkMusic(id)
-
-    if (!success) {
-      return Promise.reject(message)
-    }
-
-    const { data: [song] } = await getMusic([id])
-    const { data: { lrc, tlyric } } = await getLyric(id)
-
-    return {
-      url: song.url,
-      lyrics: lrc.lyric,
-      lyricsTranslation: tlyric.lyric
-    }
+    return currentPlaylistSong.findIndex(song => song.id === currentSong?.id)
   }
 
   // 设置播放歌曲，如果歌曲不存在，则提示用户
-  const setPlaySong = (playSong: any, index?: number) => {
-    
+  const setPlaySong = (playSong: Song, index?: number) => {
+
     return getSongUrl(playSong.id)
       .then(song => {
         if (song) {
-          const { url, lyrics, lyricsTranslation } = song
+          const { url, lyrics, translatedLyrics } = song
 
           setCurrentSong({
-            id: playSong.id,
-            name: playSong.name,
-            image: playSong.al.picUrl,
-            singers: playSong.ar,
-            album: playSong.al,
+            ...playSong,
             url,
             lyrics,
-            lyricsTranslation
+            translatedLyrics,
           })
         }
       })
       .catch(message => {
         setCurrentSong({
-          id: playSong.id,
-          name: playSong.name,
-          image: playSong.al.picUrl,
-          singers: playSong.ar,
-          album: playSong.al,
+          ...playSong,
           url: '',
-          lyrics: '',
-          lyricsTranslation: ''
+          lyrics: [],
+          translatedLyrics: []
         })
-        toast.error(`${playSong.name} -> ${message}`)
+        toast.error(`${playSong.name} → ${message}`)
         return Promise.reject(index)
       })
   }
@@ -115,29 +88,19 @@ const MusicPlayer = () => {
     const nextSong = currentPlaylistSong[nextIndex]
 
     setPlaySong(nextSong, nextIndex)
-    .catch((index) => {
-      playNext(null ,index)
-    })
+      .catch((index) => {
+        playNext(null, index)
+      })
   }
 
   const [audio, state, controls] = useAudio({
-    src: currentSong?.url,
+    src: currentSong?.url || '',
     autoPlay: true,
     loop: isLoop,
     onEnded: playNext
   })
 
   const formattedTime = formatTime(state.time)
-  
-  const lyrics = useMemo(() =>
-    parseLyric(currentSong.lyrics),
-    [currentSong.lyrics]
-  )
-
-  const translationLyrics = useMemo(() => 
-    parseLyric(currentSong.lyricsTranslation), 
-    [currentSong.lyricsTranslation]
-  )
 
   const close = () => {
     setIsOpen(false)
@@ -206,14 +169,17 @@ const MusicPlayer = () => {
                 <Icon onClick={close} className="text-2xl text-gray-500 -rotate-90 cursor-pointer" icon="material-symbols:arrow-back-ios-new-rounded" />
               </li>
             </ul>
-            <SongDetails
-              {...currentSong}
-              onTimeChange={onTimeChange}
-              time={state.time}
-              lyrics={lyrics}
-              lyricsTranslation={translationLyrics}
-              isPlaying={state.playing}
-            />
+            {
+              currentSong &&
+              (
+                <SongDetails
+                  {...currentSong}
+                  onTimeChange={onTimeChange}
+                  time={state.time}
+                  isPlaying={state.playing}
+                />
+              )
+            }
           </div>
         </Transition.Child>
       </Transition.Root>
@@ -266,7 +232,7 @@ const MusicPlayer = () => {
             block border cursor-pointer
           "
           >
-            <Avatar.Image className="w-full h-full object-cover" src={currentSong.image} alt={currentSong.name} />
+            <Avatar.Image className="w-full h-full object-cover" src={currentSong?.album.picture} alt={currentSong?.name} />
             <div
               onClick={toggle}
               className="
@@ -280,10 +246,10 @@ const MusicPlayer = () => {
             </div>
           </Avatar.Root>
           <div className="flex flex-col justify-evenly">
-            <p className="text-xl w-48 truncate">{currentSong.name}</p>
+            <p className="text-xl w-48 truncate">{currentSong?.name}</p>
             <p className="w-48 truncate">
               {
-                currentSong.singers.map((singer, i) => (
+                currentSong?.singers.map((singer, i) => (
                   <Link
                     to={`/user/${singer.id}`}
                     key={singer.id}

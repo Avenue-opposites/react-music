@@ -5,7 +5,7 @@ import * as ScrollArea from '@radix-ui/react-scroll-area'
 import Disk from './Disk'
 import clsx from 'clsx'
 import { Icon } from '@iconify-icon/react/dist/iconify.js'
-import { formatTime, Lyric } from '~/utils'
+import { formatTime } from '~/utils'
 import { GETCommentQuery, comment, getComment } from '~/api/comment'
 import SongComment, { BeReplied, CommentHandler } from '../Comment/SongComment'
 import Button from '../Button/Button'
@@ -17,17 +17,13 @@ import Separator from '../Separator'
 import toast from 'react-hot-toast'
 import SongReplyComments from '../Comment/SongReplyComments'
 import Loading from '../Loading/Loading'
+import type { Song as SongType, SongDetail as SongDetailType } from '~/store/song'
 
-interface SongDetailsProps {
-  id: number;
-  name: string;
-  image: string;
-  singers: any[];
-  album: any;
+type Song = SongType & SongDetailType
+
+interface SongDetailsProps extends Song {
   time: number;
   isPlaying: boolean;
-  lyrics: Lyric[];
-  lyricsTranslation: Lyric[];
   onTimeChange: (time: [number]) => void
 }
 export interface User {
@@ -85,12 +81,11 @@ const SongDetails: React.FC<SongDetailsProps> = ({
   id,
   time,
   name,
-  image,
   singers,
   album,
   isPlaying,
   lyrics,
-  lyricsTranslation,
+  translatedLyrics,
   onTimeChange
 }) => {
   const pageSize = 20
@@ -203,7 +198,6 @@ const SongDetails: React.FC<SongDetailsProps> = ({
       pageNo: pageNoRef.current,
     })
       .then(({ data }) => {
-        // console.log(data)
         setSongCommentState({
           ...data,
           sortType,
@@ -244,7 +238,7 @@ const SongDetails: React.FC<SongDetailsProps> = ({
           <div className="px-4">
             <div className="flex h-[calc(100vh-142px)]">
               <div className="w-[500px] h-full flex flex-col items-center">
-                <Disk isPlaying={isPlaying} name={name} image={image} />
+                <Disk isPlaying={isPlaying} name={name} image={album.picture} />
               </div>
               <div className="flex-1 h-full px-4">
                 <div className="flex flex-col gap-y-4">
@@ -269,7 +263,7 @@ const SongDetails: React.FC<SongDetailsProps> = ({
                 </div>
                 <LyricArea
                   lyrics={lyrics}
-                  lyricsTranslation={lyricsTranslation}
+                  translatedLyrics={translatedLyrics}
                   onTimeChange={onTimeChange}
                   time={time}
                 />
@@ -368,11 +362,11 @@ const SongDetails: React.FC<SongDetailsProps> = ({
 export default SongDetails
 
 // 歌词区域组件
-interface LyricAreaProps extends Pick<SongDetailsProps, 'lyrics' | 'lyricsTranslation' | 'onTimeChange' | 'time'> { }
+interface LyricAreaProps extends Pick<SongDetailsProps, 'lyrics' | 'translatedLyrics' | 'onTimeChange' | 'time'> { }
 
 const LyricArea: React.FC<LyricAreaProps> = ({
   lyrics,
-  lyricsTranslation,
+  translatedLyrics,
   onTimeChange,
   time
 }) => {
@@ -418,7 +412,7 @@ const LyricArea: React.FC<LyricAreaProps> = ({
           <ul ref={listRef} className="py-4 text-lg text-gray-500">
             <LyricList
               lyrics={lyrics}
-              lyricsTranslation={lyricsTranslation}
+              translatedLyrics={translatedLyrics}
               isTranslate={isTranslate}
               activeLyricIndex={activeLyricIndex}
               onTimeChange={onTimeChange}
@@ -447,13 +441,13 @@ interface LyricListProps extends Omit<LyricAreaProps, 'time'> {
 
 const LyricList: React.FC<LyricListProps> = ({
   lyrics,
-  lyricsTranslation,
+  translatedLyrics,
   isTranslate,
   activeLyricIndex,
   onTimeChange
 }) => {
-  const l = isTranslate ? lyricsTranslation : lyrics
-
+  const l = isTranslate ? translatedLyrics : lyrics
+  
   if (!lyrics.length) {
     if (isTranslate) {
       return <li>暂无翻译歌词</li>
