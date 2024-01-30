@@ -8,12 +8,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import { useParams } from 'react-router'
-import { useStore } from '~/store'
+import { usePlaylistStore } from '~/store/playlist'
 import { formatFrequency } from '~/utils'
 import Song from './components/Song'
 import { getPlaylistAllSong } from '~/api/playlist'
 import BaseInput from '~/components/Inputs/BaseInput'
 import { useToggle } from 'react-use'
+import { type Song as SongType,  normalize as normalizeSong, useSongStore } from '~/store/song'
 
 type Form = {
   [keyword: string]: string;
@@ -21,13 +22,12 @@ type Form = {
 
 const PlaylistPage = () => {
   const[isLoading, toggleIsLoading] = useToggle(true)
-  const [lovedSongs, lovedPlaylist, lovedSongIds] = useStore(state => [state.lovedSongs, state.lovedPlaylist(), state.lovedSongIds])
-  const [currentPlaylistSong, setCurrentPlaylistSong] = useStore(state => [state.currentPlaylistSong, state.setCurrentPlaylistSong])
+  const [currentPlaylistSong, setCurrentPlaylistSong, likedSongIds] = useSongStore(state => [state.currentPlaylistSong, state.setCurrentPlaylistSong, state.likedSongIds])
   const scrollViewRef = useRef<HTMLDivElement | null>(null)
   const limit = 50
   const [stateConfig, setStateConfig] = useState<{
     offset: number
-    songs: any[]
+    songs: SongType[]
   }>({
     offset: 0,
     songs: []
@@ -39,7 +39,7 @@ const PlaylistPage = () => {
       keyword: ''
     }
   })
-
+  
   //TODO: 处理忽略大小写
   const onSearch = debounce(handleSubmit((data) => {
 
@@ -52,21 +52,25 @@ const PlaylistPage = () => {
       return
     }
     
+    // 过滤歌名
     const songTitleFiltered = currentPlaylistSong
     .filter(song => song.name.includes(keyword))
 
+    // 过滤歌手
     const singerNameFiltered = currentPlaylistSong
     .filter(
-      song => song.ar.some(
-          (singer: { name:string }) => singer.name.includes(keyword)
+      song => song.singers.some(
+          singer => singer.name.includes(keyword)
         )
       )
 
+    // 过滤专辑
     const albumNameFiltered = currentPlaylistSong
     .filter(
-      song => song.al.name.includes(keyword)
+      song => song.album.name.includes(keyword)
     )
-
+    
+    // 去重
     const songsFiltered = [...new Set([...songTitleFiltered, ...singerNameFiltered, ...albumNameFiltered])]
     
     setStateConfig(state => ({
@@ -77,32 +81,23 @@ const PlaylistPage = () => {
   }), 300)
 
   const loadSongs = useMemo(() => stateConfig.songs.slice(0, stateConfig.offset + limit), [stateConfig])
-  const playlist = useStore(state => state.getPlaylistById(+id!))
-  const avatar = useMemo(() => playlist?.creator.avatarUrl, [playlist])
-  const cover = useMemo(() => playlist?.coverImgUrl, [playlist])
+  const playlist = usePlaylistStore(state => state.getPlaylistById(+id!))
+  const avatar = useMemo(() => playlist?.creator.avatar, [playlist])
+  const cover = useMemo(() => playlist?.coverImage, [playlist])
   const to = useMemo(() => `/user/${playlist?.creator.id}`, [playlist])
-  const createAtText = useMemo(() => format(new Date(playlist?.createTime || 0), 'yyyy-MM-dd'), [playlist])
+  const createAtText = useMemo(() => format(new Date(playlist?.createdAt || 0), 'yyyy-MM-dd'), [playlist])
   const trackCount = useMemo(() => playlist?.trackCount || 0, [playlist])
-  const playCount = useMemo(() => formatFrequency(playlist?.playCount), [playlist])
+  const playCount = useMemo(() => playlist ? formatFrequency(playlist.playCount) : '', [playlist])
 
   useEffect(() => {
     if (!id) return
-    // 当前歌单为我喜欢的音乐
-    if (id === lovedPlaylist?.id) {
-      setCurrentPlaylistSong(lovedSongs)
-      
-      setStateConfig(state => ({
-        ...state,
-        songs: lovedSongs
-      }))
-      toggleIsLoading(false)
-      return
-    }
 
     getPlaylistAllSong(+id, trackCount)
       .then((songs) => {
-        setCurrentPlaylistSong(songs)
+        songs = songs.map(normalizeSong)
 
+        setCurrentPlaylistSong(songs)
+        
         setStateConfig(state => ({
           ...state,
           songs
@@ -112,7 +107,7 @@ const PlaylistPage = () => {
         console.error(reason)
       })
       .finally(() => toggleIsLoading(false))
-  }, [id, trackCount, lovedSongs, lovedPlaylist?.id, setCurrentPlaylistSong, toggleIsLoading])
+  }, [id, trackCount, setCurrentPlaylistSong, toggleIsLoading])
 
   useEffect(() => {
     if (!scrollViewRef.current) return
@@ -230,13 +225,9 @@ const PlaylistPage = () => {
               {
                 loadSongs.map(song => <Song
                   key={song.id}
-                  id={song.id}
-                  name={song.name}
-                  album={song.al}
-                  alias={song.alia}
-                  singers={song.ar}
+                  {...song}
                   isCopyright
-                  isLoved={lovedSongIds.includes(song.id)}
+                  isLoved={likedSongIds.includes(song.id)}
                 />
                 )
               }

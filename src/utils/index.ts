@@ -1,3 +1,5 @@
+import { Lyric } from '~/store/song'
+
 export function formatFrequency(frequency: number, quantifier: string = '') {
   if(frequency < 100000) return `${frequency}${quantifier}` 
   if(frequency < 100000000) return `${(frequency/10000).toFixed(0)}万${quantifier}`
@@ -8,11 +10,6 @@ export function formatTime(time: number) {
   const minute = Math.floor(time / 60)
   const second = Math.floor(time % 60)
   return `${minute < 10 ? '0' + minute : minute}:${second < 10 ? '0' + second : second}`  
-}
-
-export interface Lyric {
-  time: number;
-  lyric: string;
 }
 
 export function parseLyric(lyric: string): Lyric[] {

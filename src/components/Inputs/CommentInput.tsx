@@ -1,7 +1,7 @@
 import { useForm, SubmitHandler, FieldValues } from 'react-hook-form'
 import Button from '../Button/Button'
 import Avatar from '../Avatar/Avatar'
-import { useStore } from '~/store'
+import { useUserStore } from '~/store/user'
 
 type Form = { 
   comment: string;
@@ -17,7 +17,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
   onSend,
   placeholder = '',
 }) => {
-  const user = useStore(state => state.user)
+  const user = useUserStore(state => state.user)!
   
   const { 
     register, 
@@ -35,7 +35,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
 
   return (
     <form className="flex h-24 justify-between gap-x-4 items-center" onSubmit={handleSubmit(onSubmit)}>
-      <Avatar src={user.avatarUrl} alt={user.nickname} />
+      <Avatar src={user.avatar} alt={user.nickname} />
       <textarea 
         className="
           peer
