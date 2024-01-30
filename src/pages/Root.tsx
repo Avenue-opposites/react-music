@@ -57,16 +57,6 @@ const Root = () => {
 
   }, [setUser, setPlaylist, setLikedSongIds, navigate])
 
-  // useEffect(() => {
-  //   if(!likedPlaylist) return
-    
-  //   getPlaylistAllSong(likedPlaylist.id, likedPlaylist.trackCount)
-  //   .then((songs) => {
-  //     setLovedSongs(songs)
-  //   })
-  // }, [lovedPlaylist, setLovedSongs])
-
-
   return (
     <main className="w-full h-screen overflow-hidden">
       <MobileStatusBar>

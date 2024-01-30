@@ -92,18 +92,6 @@ const PlaylistPage = () => {
   useEffect(() => {
     if (!id) return
 
-    // 当前歌单为我喜欢的音乐
-    // if (likedPlaylist && id === likedPlaylist.id.toString()) {
-    //   setCurrentPlaylistSong()
-      
-    //   setStateConfig(state => ({
-    //     ...state,
-    //     songs: 
-    //   }))
-    //   toggleIsLoading(false)
-    //   return
-    // }
-
     getPlaylistAllSong(+id, trackCount)
       .then((songs) => {
         songs = songs.map(normalizeSong)
