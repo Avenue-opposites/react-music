@@ -1,4 +1,4 @@
-import { Icon } from '@iconify-icon/react'
+import { Icon } from '@iconify/react'
 import Layout from '~/layout/Layout'
 import AuthForm from '~/components/Auth/AuthForm'
 

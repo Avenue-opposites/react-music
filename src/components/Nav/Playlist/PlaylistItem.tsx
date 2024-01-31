@@ -1,4 +1,4 @@
-import { Icon } from '@iconify-icon/react'
+import { Icon } from '@iconify/react'
 import { NavLink } from 'react-router-dom'
 import clsx from 'clsx'
 

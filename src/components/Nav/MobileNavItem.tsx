@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { NavLink } from 'react-router-dom'
-import { Icon, IconifyIcon } from '@iconify-icon/react'
+import { Icon, IconifyIcon } from '@iconify/react'
 import { Fragment } from 'react'
 
 export interface MobileNavItemProps {

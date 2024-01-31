@@ -1,4 +1,4 @@
-import { Icon, IconifyIcon } from '@iconify-icon/react'
+import { Icon, IconifyIcon } from '@iconify/react'
 import clsx from 'clsx'
 
 type Variant = 'primary' | 'secondary' | 'error' | 'custom'

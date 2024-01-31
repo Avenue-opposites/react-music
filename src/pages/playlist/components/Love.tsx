@@ -1,4 +1,4 @@
-import { Icon } from '@iconify-icon/react/dist/iconify.js'
+import { Icon } from '@iconify/react'
 import clsx from 'clsx'
 
 interface LoveProps {

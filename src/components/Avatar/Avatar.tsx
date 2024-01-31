@@ -21,7 +21,7 @@ const Avatar: React.FC<AvatarProps> = ({
     <A.Root
           style={{ width: size, height: size }}
           className={clsx(`
-            flex-none rounded-full
+            block flex-none rounded-full
            ring-sky-500 ring-1 ring-offset-base-100 ring-offset-0
             cursor-pointer relative aspect-square
           `,

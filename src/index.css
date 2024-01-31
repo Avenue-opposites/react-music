@@ -6,6 +6,9 @@
   .disabled {
     @apply cursor-not-allowed pointer-events-none opacity-50
   }
+  .vertical-center {
+    @apply flex items-center;
+  }
 }
 
 @layer base {

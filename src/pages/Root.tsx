@@ -57,12 +57,16 @@ const Root = () => {
 
   }, [setUser, setPlaylist, setLikedSongIds, navigate])
 
+  if(!user) {
+    return
+  }
+
   return (
     <main className="w-full h-screen overflow-hidden">
-      <MobileStatusBar>
+      <MobileStatusBar user={user}>
         <Search />
       </MobileStatusBar>
-      {user && <DesktopStatusBar user={user} />}
+      <DesktopStatusBar user={user} />
       <div className="lg:ml-64 h-[calc(100%-144px)]">
         <Outlet />
       </div>

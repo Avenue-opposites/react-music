@@ -1,4 +1,4 @@
-import { Icon } from '@iconify-icon/react'
+import { Icon } from '@iconify/react'
 import clsx from 'clsx'
 import { format } from 'date-fns'
 import { Fragment, memo } from 'react'

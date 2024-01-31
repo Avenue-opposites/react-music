@@ -1,4 +1,4 @@
-import { Icon } from '@iconify-icon/react/dist/iconify.js'
+import { Icon } from '@iconify/react'
 import * as Avatar from '@radix-ui/react-avatar'
 import * as ScrollArea from '@radix-ui/react-scroll-area'
 import useScrollBottom from '~/hooks/useScrollBottom'

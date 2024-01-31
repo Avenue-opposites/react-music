@@ -1,5 +1,5 @@
 import React, { Fragment, useMemo } from 'react'
-import { Icon } from '@iconify-icon/react'
+import { Icon } from '@iconify/react'
 import { FadeLoader } from 'react-spinners'
 import { State } from '~/types/QRCode'
 import clsx from 'clsx'

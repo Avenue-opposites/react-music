@@ -1,4 +1,4 @@
-import { Icon } from '@iconify-icon/react'
+import { InlineIcon } from '@iconify/react'
 import { useState } from 'react'
 import clsx from 'clsx'
 import * as Collapsible from '@radix-ui/react-collapsible'
@@ -18,11 +18,11 @@ const CollapsiblePlaylist: React.FC<CollapsiblePlaylist> = ({
   return (
     <Collapsible.Root open={isOpen} onOpenChange={setIsOpen}>
       <div className="flex justify-between items-center">
-        <Collapsible.Trigger>
-          <Icon className={clsx('text-xs transition-transform', isOpen && 'rotate-90')} icon="fluent:triangle-right-16-filled" />
+        <Collapsible.Trigger className="vertical-center">
+          <InlineIcon className={clsx('text-xs transition-transform', isOpen && 'rotate-90')} icon="fluent:triangle-right-16-filled" />
           <span className="ml-2">{title}</span>
         </Collapsible.Trigger>
-        <Icon className="text-xl hover:bg-gray-200 rounded transition-colors" icon="material-symbols:add-rounded" />
+        <InlineIcon className="text-xl hover:bg-gray-200 rounded transition-colors" icon="material-symbols:add-rounded" />
       </div>
       <Collapsible.Content className="CollapsibleContent" asChild>
         <ul className="mt-2 space-y-1">

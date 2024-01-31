@@ -1,6 +1,8 @@
 const Discover = () => {
   return (
-    <div>my discovery</div>
+    <div>
+      my discovery
+    </div>
   )
 }
  
